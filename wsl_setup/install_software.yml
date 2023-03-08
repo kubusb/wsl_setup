@@ -1,0 +1,126 @@
+---
+- name: Add a repository for Terraform
+  shell: wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor | sudo tee /usr/share/keyrings/hashicorp-archive-keyring.gpg;
+    gpg --no-default-keyring --keyring /usr/share/keyrings/hashicorp-archive-keyring.gpg --fingerprint;
+    echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+  ignore_errors: True
+  
+- name: Add a repository for Docker
+  shell: curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo tee /etc/apt/trusted.gpg.d/docker.asc;
+    echo "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list;
+    sudo groupadd docker;
+    sudo usermod -aG docker $USER
+  ignore_errors: True
+
+- name: Add the Mozilla Team PPA to your list of software sources
+  when: ansible_distribution == 'Ubuntu'
+  shell: sudo snap remove --purge firefox;
+    sudo add-apt-repository -y ppa:mozillateam/ppa;
+    echo "" | sudo tee /etc/apt/preferences.d/mozilla-firefox;
+    echo "Package{{':'}} *" | sudo tee -a /etc/apt/preferences.d/mozilla-firefox;
+    echo "Pin{{':'}} release o=LP-PPA-mozillateam" | sudo tee -a /etc/apt/preferences.d/mozilla-firefox;
+    echo "Pin-Priority{{':'}} 1001" | sudo tee -a /etc/apt/preferences.d/mozilla-firefox;
+    echo "" | sudo tee -a /etc/apt/preferences.d/mozilla-firefox;
+    echo 'Unattended-Upgrade::Allowed-Origins:{{':'}} "LP-PPA-mozillateam:${distro_codename}";' | sudo tee /etc/apt/apt.conf.d/51unattended-upgrades-firefox
+  ignore_errors: True
+
+- name: Install Firefox and allow potential downgrades
+  when: ansible_distribution == 'Ubuntu'
+  become: y
+  ansible.builtin.apt:
+    allow_downgrade: true
+    state: latest
+    name: firefox
+ 
+- name: Upgrade apt
+  ansible.builtin.apt:
+    upgrade: full
+    update_cache: 1
+    autoremove: 1
+  become: y
+
+- name: Install required software
+  ansible.builtin.apt:
+    state: present
+    name: "{{ item }}"
+  become: y
+  loop:
+    - apt-transport-https
+    - bat
+    - build-essential
+    - ca-certificates
+    - clusterssh
+    - containerd.io
+    - cowsay
+    - curl
+    - docker-ce
+    - docker-ce-cli
+    - dos2unix
+    - firefox
+    - fortune
+    - gdb
+    - git
+    - gnupg2
+    - jq
+    - keepassx
+    - keychain
+    - kubernetes
+    - lcov
+    - libbz2-dev
+    - libffi-dev
+    - libgdbm-compat-dev
+    - libgdbm-dev
+    - liblzma-dev
+    - libncurses5-dev
+    - libreadline6-dev
+    - libsqlite3-dev
+    - libssl-dev
+    - lzma
+    - lzma-dev
+    - net-tools
+    - openjdk-11-jre-headless
+    - openssh-client
+    - perl
+    - pkg-config
+    - python2
+    - python3
+    - sshpass
+    - tk-dev
+    - tree
+    - unzip
+    - uuid-dev
+    - yamllint
+    - zlib1g-dev
+
+- name: Install the version '1.0.3' of package "terraform" and allow potential downgrades
+  become: y
+  ansible.builtin.apt:
+    name: terraform=1.0.3
+    state: present
+    allow_downgrade: yes
+
+- name: Download the awscli v2
+  ansible.builtin.get_url:
+    url: https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip
+    dest: /tmp/awscliv2.zip
+
+- name: ensure aws_cli_v2 directory exists
+  file:
+    path: /tmp/aws_cli_v2
+    state: directory
+
+- name: Unarchive the zip file
+  unarchive: src=/tmp/awscliv2.zip dest=/tmp/aws_cli_v2
+
+- name: Install awscli v2
+  shell: sudo /tmp/aws_cli_v2/aws/install
+  ignore_errors: True
+
+- name: Delete zip file and directory from /tmp
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - /tmp/awscliv2.zip
+    - /tmp/aws_cli_v2
+...

@@ -1,0 +1,42 @@
+- name: Download python
+  get_url:
+    url: "https://www.python.org/ftp/python/{{python_version}}/Python-{{python_version}}.tgz"
+    dest: "/tmp/Python-{{python_version}}.tgz"
+
+- name: Extract archive
+  unarchive:
+    src: "/tmp/Python-{{python_version}}.tgz"
+    dest: /tmp/
+    creates: "/tmp/Python-{{python_version}}/README.md"
+    copy: false
+
+- name: Configure install
+  command: ./configure --with-pydebug --enable-optimizations --with-ensurepip=install
+  args:
+    chdir: "/tmp/Python-{{python_version}}"
+    creates: "/tmp/Python-{{python_version}}/config.status"
+
+- name: Build python
+  command: make
+  args:
+    chdir: "/tmp/Python-{{python_version}}"
+    creates: "/tmp/Python-{{python_version}}/python3"
+
+- name: Install python
+  become: true
+  command: make install
+  args:
+    chdir: "/tmp/Python-{{python_version}}"
+    creates: /usr/local/bin/python3
+
+- name: Remove build directory
+  file:
+    path: "/tmp/Python-{{python_version}}"
+    state: absent
+  become: yes
+
+- name: Remove archive
+  file:
+    path: "/tmp/Python-{{python_version}}.tgz"
+    state: absent
+...

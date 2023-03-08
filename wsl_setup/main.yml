@@ -1,0 +1,24 @@
+---
+- name: Set up local WSL env
+  hosts: localhost
+  
+  vars:
+    python_version: 3.11.2
+  
+  tasks:
+
+  - name: Enable passwordless sudo
+    include_tasks: passwordless_sudo.yml
+
+  - name: Enable ssh logging
+    include_tasks: ssh_logging.yml
+
+  - name: Enable z paths
+    include_tasks: z.yml
+
+  - name: Install software
+    include_tasks: install_software.yml
+
+  - name: Install Python3
+    include_tasks: install_python3.yml
+...

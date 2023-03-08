@@ -1,0 +1,18 @@
+---
+- name: Create z folder in home directory
+  file:
+    path: ~/z
+    state: directory
+
+- name: Download Z from git
+  git:
+    repo: https://github.com/rupa/z.git
+    dest: ~/z
+    clone: 1
+
+- name: Include in bashrc
+  lineinfile:
+    path: ~/.bashrc
+    state: present
+    line: source ~/z/z.sh
+...
