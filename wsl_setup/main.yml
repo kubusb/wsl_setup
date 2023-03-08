@@ -21,4 +21,7 @@
 
   - name: Install Python3
     include_tasks: install_python3.yml
+  
+  - name: Setup git
+    include_tasks: setup_git.yml
 ...

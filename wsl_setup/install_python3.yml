@@ -1,3 +1,4 @@
+---
 - name: Download python
   get_url:
     url: "https://www.python.org/ftp/python/{{python_version}}/Python-{{python_version}}.tgz"
@@ -28,6 +29,10 @@
   args:
     chdir: "/tmp/Python-{{python_version}}"
     creates: /usr/local/bin/python3
+
+- name: Upgrade pip
+  become: true
+  raw: "pip3 install --upgrade pip"
 
 - name: Remove build directory
   file:

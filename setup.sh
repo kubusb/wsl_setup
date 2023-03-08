@@ -1,13 +1,13 @@
 #!/bin/bash
-sudo apt update;
-sudo apt upgrade;
-sudo apt dist-upgrade
+sudo apt -y update;
+sudo apt -y upgrade;
+sudo apt -y dist-upgrade
 
 # install basic software
 sudo apt install -y git perl python3 python3-pip dos2unix gnupg software-properties-common keychain
 
 # Installing Ansible, dependent modules and helpers"
-sudo pip3 install requests ansible ansible-lint pywinrm
+pip3 install requests ansible ansible-lint pywinrm
 
 echo "# Replacing local .bashrc with shared one"
 cp ./.bashrc ~/.bashrc
